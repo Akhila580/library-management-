@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Library Management System</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f3f3f3;
+      margin: 0;
+      padding: 0;
+    }
+    header, footer {
+      background-color: #222;
+      color: white;
+      text-align: center;
+      padding: 10px 0;
+    }
+    .container {
+      max-width: 800px;
+      margin: auto;
+      padding: 20px;
+      background-color: white;
+    }
+    input, select, button {
+      padding: 8px;
+      margin: 5px 0;
+      width: 100%;
+    }
+    .book-entry {
+      border: 1px solid #ccc;
+      padding: 10px;
+      margin-bottom: 10px;
+      border-radius: 5px;
+      background-color: #f9f9f9;
+    }
+    button {
+      width: auto;
+      margin-right: 5px;
+    }
+    #bookList {
+      max-height: 400px;
+      overflow-y: auto;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>Library Management System</h1>
+</header>
+
+<div class="container">
+  <input type="text" id="searchBar" placeholder="Search by title or author">
+
+  <h2>Add New Book</h2>
+  <input type="text" id="bookTitle" placeholder="Book Title">
+  <input type="text" id="bookAuthor" placeholder="Author">
+  <select id="bookStatus">
+    <option>Available</option>
+    <option>Issued</option>
+  </select>
+  <button onclick="addBook()">Add Book</button>
+
+  <hr>
+
+  <h2>Books</h2>
+  <div id="bookList"></div>
+</div>
+
+<footer>
+  <p>&copy; 2025 Library System</p>
+</footer>
+
+<script>
+  // Load books from localStorage or start with empty array
+  let books = JSON.parse(localStorage.getItem("books")) || [];
+
+  function displayBooks(filter = "") {
+    const list = document.getElementById("bookList");
+    list.innerHTML = "";
+
+    const filteredBooks = books.filter(
+      (book) =>
+        book.title.toLowerCase().includes(filter.toLowerCase()) ||
+        book.author.toLowerCase().includes(filter.toLowerCase())
+    );
+
+    filteredBooks.forEach((book, index) => {
+      const bookDiv = document.createElement("div");
+      bookDiv.className = "book-entry";
+      bookDiv.innerHTML = `
+        <strong>Book Title:</strong> ${book.title}<br>
+        <strong>Author:</strong> ${book.author}<br>
+        <strong>Status:</strong> ${book.status}<br>
+        <button onclick="toggleStatus(${index})">${
+        book.status === "Available" ? "Issue" : "Return"
+      }</button>
+        <button onclick="deleteBook(${index})">Delete</button>
+      `;
+      list.appendChild(bookDiv);
+    });
+  }
+
+  function addBook() {
+    const title = document.getElementById("bookTitle").value.trim();
+    const author = document.getElementById("bookAuthor").value.trim();
+    const status = document.getElementById("bookStatus").value;
+
+    if (title && author) {
+      books.push({ title, author, status });
+      localStorage.setItem("books", JSON.stringify(books));
+      displayBooks();
+      document.getElementById("bookTitle").value = "";
+      document.getElementById("bookAuthor").value = "";
+      document.getElementById("bookStatus").value = "Available";
+    }
+  }
+
+  function toggleStatus(index) {
+    books[index].status =
+      books[index].status === "Available" ? "Issued" : "Available";
+    localStorage.setItem("books", JSON.stringify(books));
+    displayBooks();
+  }
+
+  function deleteBook(index) {
+    books.splice(index, 1);
+    localStorage.setItem("books", JSON.stringify(books));
+    displayBooks();
+  }
+
+  document.getElementById("searchBar").addEventListener("input", (e) => {
+    displayBooks(e.target.value);
+  });
+
+  window.onload = () => displayBooks();
+</script>
+
+</body>
+</html>
